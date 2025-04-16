@@ -1,5 +1,5 @@
 exports.up = (pgm) => {
-  pgm.createType('specie_type', ['cachorro', 'gato']);
+  pgm.createType('specie_type', ['dog', 'cat']);
 
   pgm.createTable('pets', {
     id: {
