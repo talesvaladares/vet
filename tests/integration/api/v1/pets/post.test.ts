@@ -34,7 +34,7 @@ describe('POST /api/v1/pets', () => {
         },
         body: JSON.stringify({
           name: 'zakk',
-          specie: 'cachorro',
+          specie: 'dog',
           brithday: brithday,
           weight: 30,
           user_id: responseUserBody.id,
@@ -48,7 +48,7 @@ describe('POST /api/v1/pets', () => {
       expect(responsePetBody).toEqual({
         id: responsePetBody.id,
         name: 'zakk',
-        specie: 'cachorro',
+        specie: 'dog',
         brithday: brithday.toISOString(),
         weight: 30,
         user_id: responseUserBody.id,

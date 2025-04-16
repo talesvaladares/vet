@@ -1,4 +1,4 @@
-type Specie = 'cachorro' | 'gato';
+type Specie = 'dog' | 'cat';
 
 export type PetInputValues = {
   name: string;
