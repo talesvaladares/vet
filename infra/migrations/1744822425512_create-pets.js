@@ -1,18 +1,51 @@
-/**
- * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
- */
-exports.shorthands = undefined;
+exports.up = (pgm) => {
+  pgm.createType('specie_type', ['cachorro', 'gato']);
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-exports.up = (pgm) => {};
+  pgm.createTable('pets', {
+    id: {
+      type: 'uuid',
+      primaryKey: true,
+      default: pgm.func('gen_random_uuid()'),
+    },
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-exports.down = (pgm) => {};
+    // For reference, github limits usernames to 39 characters
+    name: {
+      type: 'varchar(30)',
+      notNull: true,
+    },
+
+    specie: {
+      type: 'specie_type',
+      notNull: true,
+    },
+
+    brithday: {
+      type: 'timestamptz',
+    },
+
+    weight: {
+      type: 'decimal(5,2)',
+    },
+
+    // Why timestamp with timezone? https://justatheory.com/2012/04/postgres-use-timestamptz/
+    created_at: {
+      type: 'timestamptz',
+      notNull: true,
+      default: pgm.func(`timezone('utc', now())`),
+    },
+
+    updated_at: {
+      type: 'timestamptz',
+      notNull: true,
+      default: pgm.func(`timezone('utc', now())`),
+    },
+
+    user_id: {
+      type: 'uuid',
+      notNull: true,
+      references: '"users"(id)',
+    },
+  });
+};
+
+exports.down = false;
