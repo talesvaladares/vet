@@ -1,4 +1,5 @@
 type ErrorParams = {
+  name?: string;
   cause?: string;
   message?: string;
   action?: string;
