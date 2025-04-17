@@ -7,6 +7,7 @@ export type UserInputValues = {
 };
 
 export type User = UserInputValues & {
+  id: string;
   is_vet: boolean;
   updated_at: Date;
   created_at: Date;
