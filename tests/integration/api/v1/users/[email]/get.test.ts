@@ -1,5 +1,7 @@
 import { orchestrator } from 'tests/orchestrator';
 import { version as uuidVersion } from 'uuid';
+import { user } from 'models/user';
+import { password } from 'models/password';
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();
@@ -34,7 +36,7 @@ describe('GET /api/v1/users/[email]', () => {
         name: 'tales',
         surname: 'eduardo',
         email: 'tales@gmail.com',
-        password: 'senha123',
+        password: response2Body.password,
         phone_number: '12345678',
         is_vet: false,
         created_at: response2Body.created_at,
@@ -44,6 +46,13 @@ describe('GET /api/v1/users/[email]', () => {
       expect(uuidVersion(response2Body.id)).toBe(4);
       expect(Date.parse(response2Body.created_at)).not.toBeNaN();
       expect(Date.parse(response2Body.updated_at)).not.toBeNaN();
+
+      const userInDatabase = await user.findOneByEmail('tales@gmail.com');
+      const correctPasswordMatch = await password.compare('senha123', userInDatabase.password);
+      expect(correctPasswordMatch).toBe(true);
+
+      const incorrectPasswordMatch = await password.compare('senhaErrada', userInDatabase.password);
+      expect(incorrectPasswordMatch).toBe(false);
     });
 
     test('With case mismatch', async () => {
@@ -71,7 +80,7 @@ describe('GET /api/v1/users/[email]', () => {
         name: 'case',
         surname: 'diferente',
         email: 'casediferente@gmail.com',
-        password: 'senha123',
+        password: response2Body.password,
         phone_number: '12345678',
         is_vet: false,
         created_at: response2Body.created_at,

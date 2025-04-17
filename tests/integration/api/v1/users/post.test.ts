@@ -33,7 +33,7 @@ describe('POST /api/v1/users', () => {
         name: 'tales',
         surname: 'eduardo',
         email: 'tales@gmail.com',
-        password: 'senha123',
+        password: responseBody.password,
         phone_number: '12345678',
         is_vet: false,
         created_at: responseBody.created_at,
