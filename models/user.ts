@@ -1,11 +1,13 @@
 import { database } from 'infra/database';
 import { ValidationError, NotFoundError } from 'infra/errors';
 import { User, UserInputValues } from 'types/users';
+import { password } from './password';
 
 async function create(userInputValues: UserInputValues) {
   await validateUniqueEmail(userInputValues.email);
+  const userInputValuesWithPasswordHashed = await hashPasswordInObject(userInputValues);
 
-  const newUser = await runInsertQuery(userInputValues);
+  const newUser = await runInsertQuery(userInputValuesWithPasswordHashed);
   return newUser;
 
   async function validateUniqueEmail(email: string) {
@@ -27,6 +29,12 @@ async function create(userInputValues: UserInputValues) {
         action: 'Utilize outro email para realizar o cadastro.',
       });
     }
+  }
+
+  async function hashPasswordInObject(userInputValues: UserInputValues) {
+    const hashedPassowrd = await password.hash(userInputValues.password);
+    userInputValues.password = hashedPassowrd;
+    return userInputValues;
   }
 
   async function runInsertQuery(userInputValues: UserInputValues) {
