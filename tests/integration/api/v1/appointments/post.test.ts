@@ -225,5 +225,43 @@ describe('POST /api/v1/appointments', () => {
       name: 'ValidationError',
       status_code: 400,
     });
+
+    const veterinarianWithFreeSchedule = await veterinarianModel.create({
+      email: 'vetFree@gmail',
+      name: 'vetFree',
+      surname: 'fulaninhaFree',
+      password: 'senha1234',
+      phone_number: '123455678',
+      veterinary_data: {
+        crmv: 'MG 223456789',
+        speciality: 'Clínica',
+      },
+    });
+
+    const responseAppointmentWithOtherVeterinarianWithFreeSchedule = await fetch('http://localhost:3000/api/v1/appointments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        vet_id: veterinarianWithFreeSchedule.id,
+        pet_id: pet.id,
+        date: invalidDate,
+      }),
+    });
+
+    expect(responseAppointmentWithOtherVeterinarianWithFreeSchedule.status).toBe(201);
+
+    const responseAppointmentWithOtherVeterinarianWithFreeScheduleBody = await responseAppointmentWithOtherVeterinarianWithFreeSchedule.json();
+
+    expect(responseAppointmentWithOtherVeterinarianWithFreeScheduleBody).toEqual({
+      id: responseAppointmentWithOtherVeterinarianWithFreeScheduleBody.id,
+      vet_id: veterinarianWithFreeSchedule.id,
+      pet_id: pet.id,
+      date: responseAppointmentWithOtherVeterinarianWithFreeScheduleBody.date,
+      status: 'scheduled',
+      created_at: responseAppointmentWithOtherVeterinarianWithFreeScheduleBody.created_at,
+      updated_at: responseAppointmentWithOtherVeterinarianWithFreeScheduleBody.updated_at,
+    });
   });
 });

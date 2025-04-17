@@ -1,7 +1,6 @@
 import { database } from 'infra/database';
 import { ValidationError } from 'infra/errors';
 import { AppointmentInputValues } from 'types/appointments';
-import { addMinutes } from 'date-fns';
 
 async function create(appointmentInputValues: AppointmentInputValues) {
   validateDateInThePresent(appointmentInputValues.date);
