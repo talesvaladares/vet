@@ -1,5 +1,5 @@
 exports.up = (pgm) => {
-  pgm.createType('status_type', ['scheduled', 'completed', 'canceled']);
+  pgm.createType('status_type', ['scheduled', 'completed', 'canceled', 'blocked']);
 
   pgm.createTable('appointments', {
     id: {
