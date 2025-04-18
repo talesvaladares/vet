@@ -1,6 +1,6 @@
 import { orchestrator } from 'tests/orchestrator';
 import { version as uuidVersion } from 'uuid';
-import { subDays } from 'date-fns';
+import { addDays, subDays } from 'date-fns';
 
 import { veterinarian as veterinarianModel } from 'models/veterinarian';
 import { VeterinarianDTO } from 'types/veterinarians';
@@ -10,6 +10,9 @@ import { Pet } from 'types/pets';
 
 import { user as userModel } from 'models/user';
 import { User } from 'types/users';
+
+import { addHours } from 'date-fns';
+import { getDateNow } from 'helpers/date';
 
 let veterinarian: VeterinarianDTO;
 let pet: Pet;
@@ -58,7 +61,7 @@ afterEach(() => {
 
 describe('POST /api/v1/appointments', () => {
   it('should return appointment', async () => {
-    const tomorrow = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 1, 8, 30, 0, 0);
+    const tomorrow = addDays(getDateNow(), 1);
 
     const responseAppointment = await fetch('http://localhost:3000/api/v1/appointments', {
       method: 'POST',
@@ -93,7 +96,11 @@ describe('POST /api/v1/appointments', () => {
   });
 
   it('should return error when sent a past date', async () => {
-    const dateInThePast = subDays(new Date(), 1);
+    jest.useFakeTimers();
+    const systemTime = new Date(getDateNow()); //meio dia
+    jest.setSystemTime(systemTime);
+
+    const dateInThePast = subDays(systemTime, 1);
 
     const responseAppointment = await fetch('http://localhost:3000/api/v1/appointments', {
       method: 'POST',
@@ -121,10 +128,10 @@ describe('POST /api/v1/appointments', () => {
 
   it('should return an error if you try to schedule after of business hours', async () => {
     jest.useFakeTimers();
-    const systemTime = new Date(2025, 3, 17, 12, 0); //meio dia
+    const systemTime = new Date(getDateNow()); //8 horas
     jest.setSystemTime(systemTime);
 
-    const invalidDate = new Date(2025, 3, 17, 17, 32);
+    const invalidDate = addHours(systemTime, 10);
 
     const responseAppointment = await fetch('http://localhost:3000/api/v1/appointments', {
       method: 'POST',
@@ -148,6 +155,8 @@ describe('POST /api/v1/appointments', () => {
       name: 'ValidationError',
       status_code: 400,
     });
+
+    expect(Date.now()).toBe(systemTime.getTime());
   });
 
   it('should return an error if you try to schedule before of business hours', async () => {
@@ -183,7 +192,7 @@ describe('POST /api/v1/appointments', () => {
 
   it('should return an error if you try to schedule at an already scheduled time', async () => {
     jest.useFakeTimers();
-    const systemTime = new Date(2025, 3, 17, 12, 0); //meio dia
+    const systemTime = new Date(getDateNow()); //meio dia
     jest.setSystemTime(systemTime);
 
     const validDate = new Date(2025, 3, 18, 9, 30); // 9 horas
