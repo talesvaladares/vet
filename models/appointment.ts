@@ -1,12 +1,17 @@
 import { database } from 'infra/database';
 import { InternalServerError, ValidationError } from 'infra/errors';
-import { Appointment, AppointmentInputValues, Schedule } from 'types/appointments';
+import { Appointment, AppointmentInputValues, AppointmentStatus, Schedule } from 'types/appointments';
 import { startOfWeek as startOfWeekFunc, endOfWeek as endOfWeekFunc, addDays, differenceInMinutes, addMinutes, isSameDay, isBefore } from 'date-fns';
 import { getDateNow } from 'helpers/date';
 
 type listAvailableSlotsInputValues = {
   vet_id: string;
   date: Date;
+};
+
+type UpdateAppointmentInputValues = {
+  status: AppointmentStatus;
+  appointment_id: string;
 };
 
 type BlockedSlot = {
@@ -89,7 +94,7 @@ async function create(appointmentInputValues: AppointmentInputValues) {
       values: [date, pet_id, vet_id],
     });
 
-    return results.rows[0];
+    return results.rows[0] as Appointment;
   }
 }
 
@@ -198,7 +203,54 @@ async function listAvailableSlots({ vet_id, date }: listAvailableSlotsInputValue
   }
 }
 
+async function update({ appointment_id, status }: UpdateAppointmentInputValues) {
+  const updatedAppointment = await runUpdateQuery({ appointment_id, status });
+  return updatedAppointment;
+
+  async function runUpdateQuery({ appointment_id, status }: UpdateAppointmentInputValues) {
+    const results = await database.query({
+      text: `
+        UPDATE
+          appointments
+        SET
+          status = $1
+        WHERE
+          id = $2
+        RETURNING
+          id, status
+        ;`,
+      values: [status, appointment_id],
+    });
+
+    return results.rows[0];
+  }
+}
+
+async function listAppointmentsForAPet(pet_id: string) {
+  const appointments = await runSelectQuery(pet_id);
+  console.log(appointments);
+  return appointments;
+
+  async function runSelectQuery(pet_id: string) {
+    const results = await database.query({
+      text: `
+        SELECT
+          id, date, status
+        FROM
+          appointments
+        WHERE
+          pet_id = $1
+        ;`,
+      values: [pet_id],
+    });
+
+    return results.rows;
+  }
+}
+
 export const appointment = {
   create,
   listAvailableSlots,
+  update,
+  listAppointmentsForAPet,
 };

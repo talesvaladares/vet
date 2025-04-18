@@ -10,8 +10,11 @@ export type Schedule = {
   appointments: Appointment[];
 };
 
+export type AppointmentStatus = 'schedule' | 'completed' | 'blocked' | 'canceled';
+
 export type Appointment = {
   id: string;
   available: boolean;
   date: Date;
+  status: AppointmentStatus;
 };
